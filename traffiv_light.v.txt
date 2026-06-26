@@ -1,0 +1,101 @@
+`timescale 1ns/1ps
+
+module traffic_light(
+    input clk,
+    input reset,
+    output reg red,
+    output reg yellow,
+    output reg green
+);
+
+
+parameter GREEN  = 2'b00;
+parameter YELLOW = 2'b01;
+parameter RED    = 2'b10;
+
+
+reg [1:0] present_state, next_state;
+reg [3:0] count;
+
+
+always @(posedge clk or posedge reset)
+begin
+    if(reset)
+    begin
+        present_state <= GREEN;
+        count <= 0;
+    end
+    else
+    begin
+        present_state <= next_state;
+
+        if(present_state == next_state)
+            count <= count + 1;
+        else
+            count <= 0;
+    end
+end
+
+
+always @(*)
+begin
+    case(present_state)
+
+        GREEN:
+        begin
+            if(count >= 5)
+                next_state = YELLOW;
+            else
+                next_state = GREEN;
+        end
+
+        YELLOW:
+        begin
+            if(count >= 2)
+                next_state = RED;
+            else
+                next_state = YELLOW;
+        end
+
+        RED:
+        begin
+            if(count >= 5)
+                next_state = GREEN;
+            else
+                next_state = RED;
+        end
+
+        default:
+            next_state = GREEN;
+
+    endcase
+end
+
+always @(*)
+begin
+    red = 0;
+    yellow = 0;
+    green = 0;
+
+    case(present_state)
+
+        GREEN:
+            green = 1;
+
+        YELLOW:
+            yellow = 1;
+
+        RED:
+            red = 1;
+
+        default:
+        begin
+            red = 0;
+            yellow = 0;
+            green = 0;
+        end
+
+    endcase
+end
+
+endmodule
